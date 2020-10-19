@@ -1,9 +1,8 @@
-// import React, { Component } from "react";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Redirect } from 'react-router-dom';
-import { connect } from "react-redux";
-import { signUp } from '../../store/actions/authActions';
+import { Redirect } from "react-router-dom";
+import { signUp } from "../../store/actions/authActions";
+import { store } from "../../store/store";
 
 const SignUp = props => {
   const [email, setEmail] = useState("");
@@ -11,27 +10,24 @@ const SignUp = props => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
-  // state = {
-  //   email: "",
-  //   password: "",
-  //   firstName: "",
-  //   lastName: "",
-  // };
+  const [authError, setAuthError] = useState();
+  const [auth, setAuth] = useState();
 
-  // handleChange = (e) => {
-  //   this.setState({
-  //     [e.currentTarget.name]: e.target.value,
-  //   });
-  // };
+  useEffect(() => {
+    store.subscribe(() => {
+      const state = store.getState();
+      setAuthError(state.auth.authError);
+      setAuth(state.firebsae.auth);
+    });
+  }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
-    props.signUp({ email, password, firstName, lastName });
-    e.currentTarget.reset();
+    store.dispatch(signUp({ email, password, firstName, lastName }));
+    // e.currentTarget.reset();
   };
 
-  const { auth, authError } = props;
-  if (auth.uid) return <Redirect to="/" />
+  if (auth?.uid) return <Redirect to="/" />;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -93,20 +89,7 @@ const SignUp = props => {
         Already registered <Link to="">sign in?</Link>
       </p>
     </form>
-  )
-}
+  );
+};
 
-const mapStateToProps = (state) => {
-  return {
-    auth: state.firebsae.auth,
-    authError: state.auth.authError
-  }
-}
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    signUp: (newUser) => dispatch(signUp(newUser))
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(SignUp);
+export default SignUp;

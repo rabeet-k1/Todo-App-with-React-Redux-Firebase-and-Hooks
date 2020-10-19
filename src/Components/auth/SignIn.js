@@ -1,15 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { connect } from 'react-redux';
-import { signIn } from '../../store/actions/authActions';
-import { Redirect } from 'react-router-dom';
+import { signIn } from "../../store/actions/authActions";
+import { Redirect } from "react-router-dom";
 import firebase from "../../Config/firebaseConfig";
-import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
-
+import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
+import { store } from "../../store/store";
 
 const SignIn = props => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [authError, setAuthError] = useState();
+  const [auth, setAuth] = useState();
+
+  useEffect(() => {
+    store.subscribe(() => {
+      const state = store.getState();
+      setAuthError(state.auth.authError);
+      setAuth(state.firebsae.auth);
+    });
+  }, []);
 
   const uiConfig = {
     signInFlow: "popup",
@@ -18,18 +28,17 @@ const SignIn = props => {
       firebase.auth.FacebookAuthProvider.PROVIDER_ID,
     ],
     callbacks: {
-      signInSuccessWithAuthResult: () => false
-    }
-  }
+      signInSuccessWithAuthResult: () => false,
+    },
+  };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
-    props.signIn({ email, password })
+    store.dispatch(signIn(email, password));
     e.currentTarget.reset();
   };
 
-  const { authError, auth } = props;
-  if (auth.uid) return <Redirect exact to="/" />
+  if (auth?.uid) return <Redirect exact to="/" />;
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit}>
@@ -83,21 +92,6 @@ const SignIn = props => {
       <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />
     </React.Fragment>
   );
+};
 
-}
-
-const mapStateToProps = (state) => {
-  // console.log(state);
-  return {
-    authError: state.auth.authError,
-    auth: state.firebsae.auth
-  }
-}
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    signIn: (creds) => dispatch(signIn(creds))
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
+export default SignIn;

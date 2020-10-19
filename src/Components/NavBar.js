@@ -1,17 +1,25 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { connect } from 'react-redux';
+import { store } from "../store/store";
 
-const NavBar = (props) => {
+const NavBar = props => {
+  const [auth, setAuth] = useState();
+  const [userData, setUserData] = useState();
 
-  const { auth, userData } = props;
-  const user = auth.uid;
+  useEffect(() => {
+    store.subscribe(() => {
+      const state = store.getState();
+      setAuth(state.firebsae.auth);
+      setUserData(state.firebsae.profile);
+    });
+  }, []);
 
+  const user = auth?.uid;
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <Link className="navbar-brand" to="">
         TodoApp
-        </Link>
+      </Link>
       <button
         className="navbar-toggler"
         type="button"
@@ -41,7 +49,7 @@ const NavBar = (props) => {
           {user && (
             <React.Fragment>
               <NavLink className="nav-item nav-link" to="/profile">
-                Welcome {userData.firstName}
+                Welcome {userData?.firstName}
               </NavLink>
               <NavLink className="nav-item nav-link" to="/logout">
                 Logout
@@ -50,16 +58,8 @@ const NavBar = (props) => {
           )}
         </div>
       </div>
-    </nav >
+    </nav>
   );
-}
+};
 
-const mapStateToProps = (state) => {
-  // console.log(state);
-  return {
-    auth: state.firebsae.auth,
-    userData: state.firebsae.profile
-  }
-}
-
-export default connect(mapStateToProps)(NavBar);
+export default NavBar;
